@@ -1,0 +1,7 @@
+os: linux
+language: minimal
+services:
+- docker
+
+script:
+- cd build-app-a-la-heroku && make build
