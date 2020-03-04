@@ -2,6 +2,7 @@ image ?= app
 
 build:
 	docker build --rm -t $(image) .
+	docker images
 
 run:
 	docker run --rm -p 8080:8080 -it $(image)
