@@ -69,3 +69,6 @@ tags
 .vim
 
 # End of https://www.gitignore.io/api/vim,linux,macos
+.gitsecret/keys/random_seed
+!*.secret
+some-type-of-secret/secret.yml
