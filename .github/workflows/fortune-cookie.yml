@@ -1,0 +1,9 @@
+name: Fortune Cookie
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: vincetse/fortune-cookie-action@v1
+    - run: echo 'Hello World!'
