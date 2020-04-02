@@ -13,6 +13,7 @@ groups:
 users:
 - name: vtse
   primary_group: users
+  groups: sudo
   ssh_import_id: gh:vincetse
   shell: /bin/bash
 
@@ -24,6 +25,6 @@ write_files:
     %sudo  ALL=(ALL) NOPASSWD:ALL
 
 runcmd:
-- apt-get -y -qq autoremove --purge 
+- apt-get -y -qq autoremove --purge
 
 final_message: finito
