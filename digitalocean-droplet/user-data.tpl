@@ -4,8 +4,11 @@ apt_upgrade: true
 apt_reboot_if_required: true
 
 packages:
+- curl
 - sudo
 - ssh-import-id
+- vim
+- wget
 
 groups:
 - users
