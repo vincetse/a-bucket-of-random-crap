@@ -5,17 +5,28 @@ locals {
     "${local.region}b",
   ]
   directory = {
-    name = "corp.hock.com"
-    password = "!Secret0001"
-    size = "Small"
-    alias = "hock-inc"
+    name  = var.directory_name
+    size  = var.directory_size
+    alias = var.directory_alias
   }
 }
 
 provider "aws" {
   version = "~> 2.8"
-  region = local.region
+  region  = local.region
 }
+
+################################################################################
+# generate a directory password cos we probably shouldn't care what it is
+# for the purpose of using it as a directory for WorkSpaces.  We'll see.
+resource "random_string" "directory_password" {
+  length      = 64
+  min_upper   = 1
+  min_lower   = 1
+  min_numeric = 1
+  min_special = 1
+}
+
 
 ################################################################################
 # default VPC stuff
@@ -24,22 +35,22 @@ data "aws_vpc" "default" {
 }
 
 data "aws_subnet" "default_1" {
-  vpc_id = data.aws_vpc.default.id
+  vpc_id            = data.aws_vpc.default.id
   availability_zone = local.azs[0]
-  default_for_az = true
+  default_for_az    = true
 }
 
 data "aws_subnet" "default_2" {
-  vpc_id = data.aws_vpc.default.id
+  vpc_id            = data.aws_vpc.default.id
   availability_zone = local.azs[1]
-  default_for_az = true
+  default_for_az    = true
 }
 
 ################################################################################
 # IAM pre-req
 # https://docs.aws.amazon.com/workspaces/latest/adminguide/workspaces-access-control.html#create-default-role
 resource "aws_iam_role" "ws_default" {
-  name = "workspaces_DefaultRole"
+  name               = "workspaces_DefaultRole"
   assume_role_policy = data.aws_iam_policy_document.ws_assume_role.json
 }
 
@@ -66,8 +77,8 @@ locals {
 }
 
 resource "aws_iam_role_policy_attachment" "ws_default" {
-  count = length(local.ws_role_policy_arns)
-  role = aws_iam_role.ws_default.name
+  count      = length(local.ws_role_policy_arns)
+  role       = aws_iam_role.ws_default.name
   policy_arn = local.ws_role_policy_arns[count.index]
 }
 
@@ -75,11 +86,11 @@ resource "aws_iam_role_policy_attachment" "ws_default" {
 # WorkSpaces stuff
 resource "aws_directory_service_directory" "main" {
   name     = local.directory.name
-  password = local.directory.password
+  password = random_string.directory_password.result
   size     = local.directory.size
   alias    = local.directory.alias
   vpc_settings {
-    vpc_id     = data.aws_vpc.default.id
+    vpc_id = data.aws_vpc.default.id
     subnet_ids = [
       data.aws_subnet.default_1.id,
       data.aws_subnet.default_2.id,
