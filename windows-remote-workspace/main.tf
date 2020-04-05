@@ -4,9 +4,12 @@ locals {
     "${local.region}a",
     "${local.region}b",
   ]
-  directory_name = "ws.hello.com"
-  directory_password = "!Secret0001"
-  directory_size = "Small"
+  directory = {
+    name = "corp.hock.com"
+    password = "!Secret0001"
+    size = "Small"
+    alias = "hock-inc"
+  }
 }
 
 provider "aws" {
@@ -71,9 +74,10 @@ resource "aws_iam_role_policy_attachment" "ws_default" {
 ################################################################################
 # WorkSpaces stuff
 resource "aws_directory_service_directory" "main" {
-  name     = local.directory_name
-  password = local.directory_password
-  size     = local.directory_size
+  name     = local.directory.name
+  password = local.directory.password
+  size     = local.directory.size
+  alias    = local.directory.alias
   vpc_settings {
     vpc_id     = data.aws_vpc.default.id
     subnet_ids = [
