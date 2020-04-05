@@ -9,18 +9,6 @@ locals {
   directory_size = "Small"
 }
 
-locals {
-  bundle_id = "wsb-362t3gdrt"
-  users = [
-    {
-      username = "vtse"
-      first_name = "Vince"
-      last_name = "Tse"
-      email = "thelazyenginerd@gmail.com"
-    }
-  ]
-}
-
 provider "aws" {
   version = "~> 2.8"
   region = local.region
@@ -45,6 +33,42 @@ data "aws_subnet" "default_2" {
 }
 
 ################################################################################
+# IAM pre-req
+# https://docs.aws.amazon.com/workspaces/latest/adminguide/workspaces-access-control.html#create-default-role
+resource "aws_iam_role" "ws_default" {
+  name = "workspaces_DefaultRole"
+  assume_role_policy = data.aws_iam_policy_document.ws_assume_role.json
+}
+
+data "aws_iam_policy_document" "ws_assume_role" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "sts:AssumeRole",
+    ]
+    principals {
+      type = "Service"
+      identifiers = [
+        "workspaces.amazonaws.com",
+      ]
+    }
+  }
+}
+
+locals {
+  ws_role_policy_arns = [
+    "arn:aws:iam::aws:policy/AmazonWorkSpacesServiceAccess",
+    "arn:aws:iam::aws:policy/AmazonWorkSpacesSelfServiceAccess"
+  ]
+}
+
+resource "aws_iam_role_policy_attachment" "ws_default" {
+  count = length(local.ws_role_policy_arns)
+  role = aws_iam_role.ws_default.name
+  policy_arn = local.ws_role_policy_arns[count.index]
+}
+
+################################################################################
 # WorkSpaces stuff
 resource "aws_directory_service_directory" "main" {
   name     = local.directory_name
@@ -59,21 +83,17 @@ resource "aws_directory_service_directory" "main" {
   }
 }
 
-#resource "aws_workspaces_directory" "main" {
-#  directory_id = aws_directory_service_directory.main.id
-#
-#  self_service_permissions {
-#    change_compute_type  = false
-#    increase_volume_size = false
-#    rebuild_workspace    = true
-#    restart_workspace    = true
-#    switch_running_mode  = false
-#  }
-#}
+resource "aws_workspaces_directory" "main" {
+  directory_id = aws_directory_service_directory.main.id
 
-################################################################################
-# Individual workspaces.
-#resource "null_resource" "workspaces" {
-#  provisioner "local-exec" {
-#  }
-#}
+  self_service_permissions {
+    change_compute_type  = false
+    increase_volume_size = false
+    rebuild_workspace    = true
+    restart_workspace    = true
+    switch_running_mode  = false
+  }
+  depends_on = [
+    aws_iam_role.ws_default
+  ]
+}
