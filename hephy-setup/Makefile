@@ -20,6 +20,16 @@ create:
 		--namespace $(ns) \
 		--set global.use_rbac=true,global.use_cni=true
 
+status:
+	helm status $(release) \
+		--namespace $(ns)
+	kubectl get all --namespace $(ns)
+	$(eval lb = $(shell kubectl get service deis-router \
+		--namespace $(ns) \
+		-ojsonpath="{.status.loadBalancer.ingress[0].ip}"))
+	@echo LoadBalancer IP: $(lb)
+	@echo Deis Router: http://deis.$(lb).nip.io
+
 delete:
 	-helm delete $(release) --namespace $(ns)
 	-kubectl delete namespace $(ns)
