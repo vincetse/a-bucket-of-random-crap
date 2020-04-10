@@ -21,6 +21,9 @@ create:
 	kubectl create -f $(manifest)
 	kubectl get pods -n $(ns)
 
+status:
+	kubectl get pods -n $(ns)
+
 delete: undeploy
 	-kubectl delete -f $(manifest)
 	-kubectl delete namespace $(ns)
