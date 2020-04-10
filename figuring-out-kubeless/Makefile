@@ -44,10 +44,11 @@ deploy:
 
 call:
 	kubeless function call hello --data '{"Another": "Echo"}'
+	$(eval lb = $(shell kubectl get ingress hello -ojsonpath='{.status.loadBalancer.ingress[0].ip}'))
 	curl --data '{"Another": "Echo"}' \
 		--header "Host: $(hostname)" \
 		--header "Content-Type: application/json" \
-		 104.197.135.47
+		$(lb)
 
 undeploy:
 	-kubeless trigger http delete hello
