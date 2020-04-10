@@ -1,9 +1,11 @@
 SHELL := /bin/bash
 
 # https://kubeless.io/docs/quick-start/
+# https://kubeless.io/docs/http-triggers/
 ns = kubeless
 version = v1.0.6
 manifest = https://github.com/kubeless/kubeless/releases/download/$(version)/kubeless-$(version).yaml
+hostname = foobar.com
 
 cli:
 	-rm -rf bundles $(zipfile)
@@ -19,7 +21,7 @@ create:
 	kubectl create -f $(manifest)
 	kubectl get pods -n $(ns)
 
-delete:
+delete: undeploy
 	-kubectl delete -f $(manifest)
 	-kubectl delete namespace $(ns)
 
@@ -29,9 +31,21 @@ deploy:
 		--from-file test.py \
 		--handler test.hello
 	kubectl get functions
+	@sleep 3
+	kubeless trigger http create hello \
+		--function-name hello \
+		--hostname $(hostname) \
+		--gateway kong
+	@sleep 3
+	kubectl get ingress
 
 call:
-	kubeless function call hello --data 'Hello world!'
+	kubeless function call hello --data '{"Another": "Echo"}'
+	curl --data '{"Another": "Echo"}' \
+		--header "Host: $(hostname)" \
+		--header "Content-Type: application/json" \
+		 104.197.135.47
 
 undeploy:
-	kubeless function delete hello
+	-kubeless trigger http delete hello
+	-kubeless function delete hello
