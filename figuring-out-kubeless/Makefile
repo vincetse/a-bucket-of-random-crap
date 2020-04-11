@@ -33,6 +33,7 @@ deploy:
 		--runtime python2.7 \
 		--from-file test.py \
 		--handler test.hello
+	@sleep 3
 	kubectl get functions
 	@sleep 3
 	kubeless trigger http create hello \
