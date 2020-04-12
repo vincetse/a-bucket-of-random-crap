@@ -25,6 +25,7 @@ resource "helm_release" "hephy_workflow" {
   name = local.ns_hephy_workflow
   repository = data.helm_repository.hephy.metadata[0].name
   chart = "hephy/workflow"
+  version = "2.21.4"
   namespace = local.ns_hephy_workflow
 
   set {
@@ -73,6 +74,7 @@ resource "helm_release" "kong" {
   name = local.ns_kong
   repository = data.helm_repository.kong.metadata[0].name
   chart = "kong/kong"
+  version = "1.5.0"
   namespace = local.ns_kong
 
   set {
