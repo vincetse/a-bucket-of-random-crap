@@ -22,6 +22,10 @@ locals {
 }
 
 ################################################################################
+# OAuth configuration
+# Watch this: https://github.com/terraform-providers/terraform-provider-google/issues/6074
+
+################################################################################
 # Bitnami Kubernetes Production Runtime
 # https://github.com/bitnami/kube-prod-runtime/blob/master/docs/quickstart-gke.md
 resource "null_resource" "kubeprod_install" {
