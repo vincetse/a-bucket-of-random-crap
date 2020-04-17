@@ -23,7 +23,9 @@ resource "digitalocean_droplet" "web" {
 
 data "template_file" "user_data" {
   template = file("${path.module}/user-data.tpl")
-  vars     = {}
+  vars     = {
+    ubuntu_codename = "bionic"
+  }
 }
 
 ################################################################################
