@@ -5,9 +5,9 @@ namespace = kube-system
 version = v0.3.0
 
 cli:
-	wget -O kubedb https://github.com/kubedb/cli/releases/download/$(version)/kubedb-linux-amd64
-	chmod +x kubedb
-	mv kubedb ~/.local/bin
+	wget -O kubectl-vault https://github.com/kubevault/cli/releases/download/$(version)/kubectl-vault-linux-amd64
+	chmod +x kubectl-vault
+	mv kubectl-vault ~/.local/bin
 
 init:
 	helm repo add appscode https://charts.appscode.com/stable
