@@ -1,0 +1,18 @@
+# https://github.com/kubedb/cli/blob/0.12.0/docs/examples/postgres/clustering/ha-postgres.yaml
+---
+apiVersion: kubedb.com/v1alpha1
+kind: Postgres
+metadata:
+  name: ha-postgres
+  namespace: demo
+spec:
+  version: "9.6-v2"
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi

@@ -24,12 +24,16 @@ create:
 		--version $(version) \
 		--namespace $(namespace)
 	make --directory demo create
+	make --directory pg-ha create
+	make --directory pg-hot create
 
 status:
 	helm status $(release)-operator --namespace $(namespace)
 	helm status $(release)-catalog --namespace $(namespace)
 
 delete:
+	-make --directory pg-hot delete
+	-make --directory pg-ha delete
 	-make --directory demo delete
 	-helm delete $(release)-catalog --namespace $(namespace)
 	-helm delete $(release)-operator --namespace $(namespace)
