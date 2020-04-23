@@ -6,7 +6,7 @@ statefulset_name = ha-postgres
 create:
 	kubectl create -f $(statefulset_name).yaml
 	sleep 60
-	kubectl wait --for=condition=Ready pod/$(statefulset_name)-2 -n demo
+	kubectl wait --for=condition=Ready pod/$(statefulset_name)-0 -n demo
 
 status:
 	kubectl get services -n demo myadmin
