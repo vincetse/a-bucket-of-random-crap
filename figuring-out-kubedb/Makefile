@@ -26,12 +26,14 @@ create:
 	make --directory demo create
 	make --directory pg-ha create
 	make --directory pg-hot create
+	make --directory mysql-clustering create
 
 status:
 	helm status $(release)-operator --namespace $(namespace)
 	helm status $(release)-catalog --namespace $(namespace)
 
 delete:
+	-make --directory mysql-clustering delete
 	-make --directory pg-hot delete
 	-make --directory pg-ha delete
 	-make --directory demo delete
