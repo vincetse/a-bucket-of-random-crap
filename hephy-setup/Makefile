@@ -1,6 +1,7 @@
 # https://docs.teamhephy.com/installing-workflow/
 ns = deis
 release = rx
+version = v2.21.5
 
 cli:
 	wget https://raw.githubusercontent.com/teamhephy/workflow-cli/master/install-v2.sh
@@ -17,6 +18,7 @@ init:
 create:
 	kubectl create namespace $(ns)
 	helm install $(release) hephy/workflow \
+		--version $(version) \
 		--namespace $(ns) \
 		--set global.use_rbac=true,global.use_cni=true
 
