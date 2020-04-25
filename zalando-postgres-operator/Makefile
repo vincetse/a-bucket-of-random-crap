@@ -28,8 +28,9 @@ create:
 		--namespace $(namespace)
 
 ui:
-	@echo "Visit http://localhost:3000"
-	kubectl port-forward service/$(release)-ui-postgres-operator-ui --address 0.0.0.0 3000:8080
+	$(eval port := 5000)
+	@echo "Visit http://localhost:$(port)"
+	kubectl port-forward service/$(release)-ui-postgres-operator-ui --address 0.0.0.0 $(port):8080
 
 status:
 	helm status $(release) --namespace $(namespace)
