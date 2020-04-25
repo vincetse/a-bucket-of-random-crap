@@ -6,6 +6,11 @@ instance_count = 3
 
 ck := civo kubernetes
 
+cli:
+	sudo apt update
+	sudo apt install ruby
+	sudo gem install civo_cli
+
 versions:
 	$(ck) versions
 
