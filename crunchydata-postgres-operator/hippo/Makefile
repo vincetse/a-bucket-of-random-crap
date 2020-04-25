@@ -37,12 +37,16 @@ create: pgo
 	kubectl wait --for=condition=Complete job/backrest-backup-$(cluster_name) \
 		--namespace $(pgouser) \
 		--timeout=300s
+	# add replica
+	$(envvars) pgo scale $(cluster_name) --replica-count 2 --no-prompt
 	# users
 	$(envvars) pgo create user $(cluster_name) --username=$(dbuser) --managed
 
+scale: pgo
+	$(envvars) pgo scale $(cluster_name) --no-prompt
+
 list-users: pgo
 	$(envvars) pgo show user $(cluster_name)
-
 
 status: pgo
 	$(envvars) pgo show cluster -n $(pgouser) $(cluster_name)
@@ -58,12 +62,19 @@ delete: pgo
 client: auth
 	kubectl run client-$$RANDOM -it --rm --restart=Never \
 		--image=postgres:12-alpine \
-		--env PGHOST=$(cluster_name).$(pgouser) \
-		--env PGUSER=$(username) \
-		--env PGPASSWORD=$(password) \
+		--env PGHOST="$(hostname)" \
+		--env PGUSER="$(username)" \
+		--env PGPASSWORD="$(password)" \
 		--env PGDATABASE=userdb \
 		-- \
 		psql
+
+primary: hostname=$(cluster_name).$(pgouser)
+primary: client
+
+replica: hostname=$(cluster_name)-replica.$(pgouser)
+replica: client
+
 
 shell:
 	$(eval pod_name = $(shell kubectl get pods \
