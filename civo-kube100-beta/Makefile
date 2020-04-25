@@ -6,6 +6,9 @@ instance_count = 3
 
 ck := civo kubernetes
 
+versions:
+	$(ck) versions
+
 create:
 	$(ck) create $(cluster_name) \
 		--nodes=$(instance_count) \
