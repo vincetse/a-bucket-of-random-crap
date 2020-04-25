@@ -39,3 +39,12 @@ status:
 delete:
 	-helm delete $(release)-ui --namespace $(namespace)
 	-helm delete $(release) --namespace $(namespace)
+
+client:
+	kubectl run client-$$RANDOM -it --rm --restart=Never \
+		--image=postgres:12-alpine \
+		-- \
+		/bin/sh
+
+shell:
+	kubectl exec -it -n demo $(statefulset_name)-0 -- /bin/bash
