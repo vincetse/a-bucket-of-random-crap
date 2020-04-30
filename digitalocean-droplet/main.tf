@@ -12,6 +12,12 @@ data "http" "myip" {
 }
 
 ################################################################################
+data "digitalocean_vpc" "default" {
+  name   = "default-${local.region}"
+}
+
+
+################################################################################
 resource "digitalocean_droplet" "web" {
   image     = local.image
   name      = "web-1"
@@ -19,6 +25,7 @@ resource "digitalocean_droplet" "web" {
   size      = "s-1vcpu-1gb"
   ipv6      = true
   user_data = data.template_file.user_data.rendered
+  vpc_uuid  = data.digitalocean_vpc.default.id
 }
 
 data "template_file" "user_data" {
