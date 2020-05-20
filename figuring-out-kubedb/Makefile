@@ -41,3 +41,8 @@ delete:
 	-helm delete $(release)-operator --namespace $(namespace)
 	-kubectl delete crd -l app=kubedb
 	-kubectl delete podsecuritypolicy -l app=kubedb-catalog
+
+mysql postgres redis mongodb elasticsearch memcached:
+	kubectl get $@versions
+
+versions: mysql postgres redis mongodb elasticsearch memcached
