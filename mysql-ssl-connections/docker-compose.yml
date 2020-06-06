@@ -1,0 +1,50 @@
+version: "3.7"
+services:
+
+  server:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: verysecurepassword123
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: dbuser
+      MYSQL_PASSWORD: dbpass123
+    healthcheck:
+      test:
+      - CMD
+      - mysqladmin
+      - --user=root
+      - --password=verysecurepassword123
+      - --host=127.0.0.1
+      - --ssl-mode=REQUIRED
+      - --ssl-cipher=DHE-RSA-AES128-GCM-SHA256:AES128-SHA
+      - ping
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  client:
+    image: mysql:5.6
+    environment:
+      MYSQL_HOST: server
+      MYSQL_PWD: dbpass123
+    depends_on:
+    - server
+    command: |
+      bash -c "
+        set -euxo pipefail
+        sleep 20
+        mysqladmin \\
+          --user=dbuser \\
+          --password=dbpass123 \\
+          --host=server \\
+          --ssl-mode=REQUIRED \\
+          --ssl-cipher=DHE-RSA-AES128-GCM-SHA256:AES128-SHA \\
+          --wait ping
+        echo \"show variables like '%ssl%'\" | \\
+          mysql \\
+            --user=dbuser \\
+            --database=testdb \\
+            --table \\
+            --ssl-mode=REQUIRED \\
+            --ssl-cipher=DHE-RSA-AES128-GCM-SHA256:AES128-SHA
+      "
