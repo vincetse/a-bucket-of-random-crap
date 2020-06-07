@@ -42,7 +42,12 @@ services:
           --ssl-mode=REQUIRED \\
           --ssl-cipher=DHE-RSA-AES128-GCM-SHA256:AES128-SHA \\
           --wait ping
-        echo \"status; SHOW SESSION STATUS LIKE 'Ssl_version';\" | \\
+        echo \"
+          STATUS;
+          SHOW SESSION STATUS LIKE 'Ssl_version';
+          SHOW GLOBAL VARIABLES LIKE 'tls_version';
+          SHOW VARIABLES LIKE '%ssl%';
+        \" | \\
           mysql \\
             --user=dbuser \\
             --database=testdb \\
