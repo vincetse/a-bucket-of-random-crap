@@ -9,5 +9,5 @@ RUN \
   apt-get autoremove --yes && \
   rm -rf /var/lib/{apt,dpkg,cache,log}/ && \
   unset DEBIAN_FRONTEND
-COPY ssl.cnf /etc/mysql/mysql.conf.d/
+COPY ssl.cnf /etc/mysql/conf.d/
 COPY mysql56-generate-ssl-certs.sh /docker-entrypoint-initdb.d/
