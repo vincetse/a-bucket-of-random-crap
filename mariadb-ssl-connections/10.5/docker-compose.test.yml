@@ -1,0 +1,54 @@
+version: "3.7"
+services:
+
+  server:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      MYSQL_ROOT_PASSWORD: verysecurepassword123
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: dbuser
+      MYSQL_PASSWORD: dbpass123
+    healthcheck:
+      test:
+      - CMD
+      - mysqladmin
+      - --user=root
+      - --password=verysecurepassword123
+      - --host=127.0.0.1
+      - --ssl-cipher=DHE-RSA-AES128-GCM-SHA256:AES128-SHA
+      - ping
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  sut:
+    image: mariadb:10.5
+    environment:
+      MYSQL_HOST: server
+      MYSQL_PWD: dbpass123
+    depends_on:
+    - server
+    command: |
+      bash -c "
+        set -euxo pipefail
+        sleep 10
+        mysqladmin \\
+          --user=dbuser \\
+          --password=dbpass123 \\
+          --host=server \\
+          --ssl-cipher=DHE-RSA-AES128-GCM-SHA256:AES128-SHA \\
+          --wait ping
+        echo \"
+          STATUS;
+          SHOW SESSION STATUS LIKE 'Ssl_version';
+          SHOW GLOBAL VARIABLES LIKE 'tls_version';
+          SHOW VARIABLES LIKE '%ssl%';
+        \" | \\
+          mysql \\
+            --user=dbuser \\
+            --database=testdb \\
+            --table \\
+            --ssl-cipher=DHE-RSA-AES128-GCM-SHA256:AES128-SHA
+      "

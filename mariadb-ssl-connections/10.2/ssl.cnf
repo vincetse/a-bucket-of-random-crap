@@ -1,0 +1,4 @@
+[mysqld]
+ssl_ca=ca.pem
+ssl_cert=server-cert.pem
+ssl_key=server-key.pem
