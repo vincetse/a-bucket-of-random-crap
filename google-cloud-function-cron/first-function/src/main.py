@@ -1,4 +1,4 @@
-
+import subprocess
 
 
 def hello_pubsub(event, context):
@@ -21,3 +21,21 @@ def hello_pubsub(event, context):
     else:
         name = 'World'
     print('Hello {}!'.format(name))
+    which_gsutil()
+
+
+
+def which_gsutil():
+
+    p = subprocess.run(
+      [
+        "which",
+        "gsutil"
+      ],
+      capture_output=True
+    )
+    print(p.stdout)
+
+
+if __name__ == "__main__":
+    which_gsutil()
