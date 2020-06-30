@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
 cluster_name = c-1
-k3s_version = 0.9.1
+k3s_version = 1.0.0
 instance_size = g2.medium
 instance_count = 3
 
