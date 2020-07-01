@@ -6,11 +6,14 @@ instance_size = g2.medium
 instance_count = 3
 
 ck := civo kubernetes
+ca := $(ck) applications
 
 cli:
-	sudo apt update
-	sudo apt install ruby
-	sudo gem install civo_cli
+	$(eval version = v0.6.8)
+	$(eval rpm = civo_amd64.deb)
+	wget https://github.com/civo/cli/releases/download/$(version)/$(rpm)
+	sudo apt-get install -y ./$(rpm)
+	rm $(rpm)
 
 versions:
 	$(ck) versions
@@ -37,3 +40,11 @@ shell:
 		--image=ubuntu:18.04 \
 		-- \
 		/bin/bash
+
+# https://www.civo.com/learn/kubernetes-cluster-administration-using-civo-cli
+# civo k8s applications  ls
+apps:
+	$(eval apps = Longhorn KubeDB)
+	for app in $(apps); do \
+		$(ca) add $${app} --cluster=$(cluster_name); \
+	done
