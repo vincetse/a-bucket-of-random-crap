@@ -23,9 +23,11 @@ create:
 		--version=$(k3s_version) \
 		--nodes=$(instance_count) \
 		--size=$(instance_size) \
-		--wait
+		--wait \
+		--yes
 	$(ck) config $(cluster_name) \
-		--save
+		--save \
+		--yes
 	kubectl config use-context $(cluster_name)
 
 delete:
