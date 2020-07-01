@@ -30,7 +30,7 @@ create:
 
 delete:
 	-kubectl config delete-context $(cluster_name)
-	-$(ck) delete $(cluster_name)
+	-$(ck) delete $(cluster_name) --yes
 
 list:
 	$(ck) list
