@@ -8,8 +8,7 @@ ZONE=${REGION}-a
 # gcloud compute machine-types list --filter=zone:${ZONE}
 MACHINE_TYPE=e2-standard-2
 # gcloud container get-server-config --zone ${ZONE}
-K8S_VERSION=1.15.11-gke.5
-#K8S_CHANNEL=
+K8S_CHANNEL=regular
 ENABLE_METERING=false
 RESOURCE_MEETING_TABLE=$(echo "gke_${CLUSTER_NAME}_metering" | tr "-" "_")
 
@@ -45,8 +44,7 @@ function create()
   gcloud beta container clusters create \
     ${name} \
     --machine-type "${machine_type}" \
-    --cluster-version "${K8S_VERSION}" \
-    --node-version "${K8S_VERSION}" \
+    --release-channel="${K8S_CHANNEL}" \
     --enable-autoupgrade \
     --preemptible \
     --num-nodes "${count}" \
