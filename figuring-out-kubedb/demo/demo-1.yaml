@@ -1,6 +1,6 @@
-# https://github.com/kubedb/cli/blob/0.12.0/docs/examples/mysql/quickstart/demo-1.yaml
+# https://github.com/kubedb/docs/raw/v2020.12.10/docs/examples/mysql/quickstart/demo-1.yaml
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -8,7 +8,10 @@ metadata:
   name: myadmin
   namespace: demo
 spec:
-  replicas: 1
+  replicas: 3
+  selector:
+    matchLabels:
+      app: myadmin
   template:
     metadata:
       labels:

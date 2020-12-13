@@ -10,23 +10,23 @@ create:
 
 status:
 	kubectl get services -n demo myadmin
-	kubedb describe my -n demo $(statefulset_name)
+	kubectl dba describe my -n demo $(statefulset_name)
 
 versions:
 	kubectl get postgresversions
 
 delete:
-	-kubedb delete -f $(statefulset_name).yaml
+	-kubectl delete -f $(statefulset_name).yaml
 
 auth:
 	$(eval username = $(shell kubectl get secrets \
 		--namespace demo \
 		$(statefulset_name)-auth \
-		-o jsonpath='{.data.POSTGRES_USER}' | base64 -d))
+		-o jsonpath='{.data.username}' | base64 -d))
 	$(eval password = $(shell kubectl get secrets \
 		--namespace demo \
 		$(statefulset_name)-auth \
-		-o jsonpath='{.data.POSTGRES_PASSWORD}' | base64 -d))
+		-o jsonpath='{.data.password}' | base64 -d))
 	$(eval hostname0= $(shell kubectl get pods \
 		$(statefulset_name)-0 -n demo -ojsonpath='{.status.podIP}'))
 	$(eval hostname1= $(shell kubectl get pods \
@@ -39,7 +39,7 @@ client: auth
 		kubectl run client-$$RANDOM -it --rm --restart=Never \
 			--image=postgres:11 \
 			--env PGUSER=$(username) \
-			--env PGPASSWORD=$(password) \
+			--env PGPASSWORD='$(password)' \
 			--env PGHOST=$${hostname} \
 			-- \
 			psql; \

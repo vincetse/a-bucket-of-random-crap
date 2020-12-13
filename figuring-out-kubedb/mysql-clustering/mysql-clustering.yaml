@@ -1,12 +1,12 @@
-# https://github.com/kubedb/docs/blob/master/docs/examples/mysql/clustering/demo-1.yaml
+# https://github.com/kubedb/docs/raw/v2020.12.10/docs/examples/mysql/clustering/demo-1.yaml
 ---
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: MySQL
 metadata:
   name: mysql-clustering
   namespace: demo
 spec:
-  version: "5.7.25"
+  version: "8.0.21"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -22,4 +22,3 @@ spec:
       requests:
         storage: 1Gi
   terminationPolicy: WipeOut
-

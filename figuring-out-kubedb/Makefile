@@ -2,12 +2,14 @@
 SHELL := /bin/bash
 release = kubedb
 namespace = kube-system
-version = 0.12.0
+version = 0.15.2
 
 cli:
-	wget -O kubedb https://github.com/kubedb/cli/releases/download/$(version)/kubedb-linux-amd64
-	chmod +x kubedb
-	mv kubedb ~/.local/bin
+	cd $(shell mktemp -d) && \
+	curl -o kubectl-dba.tar.gz -fsSL https://github.com/kubedb/cli/releases/download/v0.15.2/kubectl-dba-linux-amd64.tar.gz && \
+	tar zxvf kubectl-dba.tar.gz && \
+	chmod +x kubectl-dba-linux-amd64 && \
+	mv kubectl-dba-linux-amd64 ~/.local/bin/kubectl-dba
 
 init:
 	helm repo add appscode https://charts.appscode.com/stable

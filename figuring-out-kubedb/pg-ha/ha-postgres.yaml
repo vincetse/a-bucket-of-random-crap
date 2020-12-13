@@ -1,12 +1,12 @@
 # https://github.com/kubedb/cli/blob/0.12.0/docs/examples/postgres/clustering/ha-postgres.yaml
 ---
-apiVersion: kubedb.com/v1alpha1
+apiVersion: kubedb.com/v1alpha2
 kind: Postgres
 metadata:
   name: ha-postgres
   namespace: demo
 spec:
-  version: "9.6-v2"
+  version: "11.2"
   replicas: 3
   storageType: Durable
   storage:

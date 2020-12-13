@@ -10,13 +10,13 @@ create:
 
 status:
 	kubectl get services -n demo myadmin
-	kubedb describe my -n demo $(statefulset_name)
+	kubectl dba describe my -n demo $(statefulset_name)
 
 versions:
 	kubectl get postgresversions
 
 delete:
-	-kubedb delete -f $(statefulset_name).yaml
+	-kubectl delete -f $(statefulset_name).yaml
 
 auth:
 	$(eval username = $(shell kubectl get secrets \
@@ -38,7 +38,7 @@ client: auth
 	for hostname in $(hostname0) $(hostname1) $(hostname2); do \
 		kubectl run client-$$RANDOM -it --rm --restart=Never \
 			--image=percona:8 \
-			--env MYSQL_PWD=$(password) \
+			--env MYSQL_PWD='$(password)' \
 			-- \
 			mysql \
 				--host=$${hostname} \
