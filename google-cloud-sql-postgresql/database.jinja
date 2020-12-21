@@ -1,0 +1,58 @@
+# https://cloud.google.com/sql/docs/postgres/admin-api/rest/v1beta4/instances#DatabaseFlags
+# https://cloud.google.com/sql/docs/postgres/admin-api/rest/v1beta4/SqlUserType
+# https://cloud.google.com/sql/docs/postgres/create-edit-iam-instances
+# https://cloud.google.com/sql/docs/postgres/iam-logins
+resources:
+
+  - name: "instance"
+    type: "gcp-types/sqladmin-v1beta4:instances"
+    properties:
+      name: {{ properties["instance_name"] }}
+      availabilityType: "zonal"
+      databaseVersion: "POSTGRES_12"
+      dataDiskType: "PD_HDD"
+      dataDiskSizeGb: 10
+      collation: "utf8"
+      settings:
+        tier: {{ properties["tier"] }}
+        databaseFlags:
+          - name: "cloudsql.iam_authentication"
+            value: "on"
+        ipConfiguration:
+          ipv4Enabled: true
+          requireSsl: false
+          authorizedNetworks:
+            - name: "home"
+              value: {{ properties["home_cidr"] }}
+              kind: "sql#aclEntry"
+
+  - name: "database"
+    type: "gcp-types/sqladmin-v1beta4:databases"
+    metadata:
+      dependsOn:
+        - "instance"
+    properties:
+      name: {{ properties["database_name"] }}
+      instance: $(ref.instance.name)
+      charset: "utf8"
+      collation: "en_US.UTF8"
+
+  - name: "cert"
+    type: "gcp-types/sqladmin-v1beta4:sslCerts"
+    metadata:
+      dependsOn:
+        - "instance"
+    properties:
+      name: {{ properties["cert_name"] }}
+      instance: $(ref.instance.name)
+
+  - name: "vtse2"
+    type: "gcp-types/sqladmin-v1beta4:users"
+    metadata:
+      dependsOn:
+        - "database"
+    properties:
+      kind: "sql#user"
+      name: {{ properties["user"] }}
+      type: "CLOUD_IAM_USER"
+      instance: $(ref.instance.name)
