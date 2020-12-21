@@ -1,0 +1,52 @@
+# https://cloud.google.com/sql/docs/mysql/admin-api/rest/v1beta4/users
+resources:
+
+  - name: "instance"
+    type: "gcp-types/sqladmin-v1beta4:instances"
+    properties:
+      name: {{ properties["instance_name"] }}
+      availabilityType: "zonal"
+      databaseVersion: "MYSQL_5_7"
+      dataDiskType: "PD_HDD"
+      dataDiskSizeGb: 10
+      collation: "utf8"
+      settings:
+        tier: {{ properties["tier"] }}
+        ipConfiguration:
+          ipv4Enabled: true
+          requireSsl: false
+          authorizedNetworks:
+            - name: "home"
+              value: {{ properties["home_cidr"] }}
+              kind: "sql#aclEntry"
+
+  - name: "database"
+    type: "gcp-types/sqladmin-v1beta4:databases"
+    metadata:
+      dependsOn:
+        - "instance"
+    properties:
+      name: {{ properties["database_name"] }}
+      instance: $(ref.instance.name)
+      charset: "utf8"
+      collation: "utf8_general_ci"
+
+  - name: "cert"
+    type: "gcp-types/sqladmin-v1beta4:sslCerts"
+    metadata:
+      dependsOn:
+        - "instance"
+    properties:
+      name: {{ properties["cert_name"] }}
+      instance: $(ref.instance.name)
+
+  - name: "vtse2"
+    type: "gcp-types/sqladmin-v1beta4:users"
+    metadata:
+      dependsOn:
+        - "database"
+    properties:
+      kind: "sql#user"
+      name: {{ properties["user"] }}
+      password: {{ properties["password"] }}
+      instance: $(ref.instance.name)
