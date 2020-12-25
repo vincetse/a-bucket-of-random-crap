@@ -14,7 +14,7 @@ RESOURCE_MEETING_TABLE=$(echo "gke_${CLUSTER_NAME}_metering" | tr "-" "_")
 
 function create_metering_table()
 {
-  if [[ "${ENABLE_METERING}" -eq "true" ]]; then
+  if [[ "${ENABLE_METERING}" == "true" ]]; then
     bq mk \
       --dataset \
       --description "GKE ${name} cluster metering" \
@@ -24,7 +24,7 @@ function create_metering_table()
 
 function delete_metering_table()
 {
-  if [[ "${ENABLE_METERING}" -eq "true" ]]; then
+  if [[ "${ENABLE_METERING}" == "true" ]]; then
     bq rm \
       --recursive \
       --force \
@@ -39,7 +39,10 @@ function create()
   local count=1
   local max_nodes=3
   local maintenance_window="06:00"
-  local metering_params="--enable-network-egress-metering --enable-resource-consumption-metering --resource-usage-bigquery-dataset ${RESOURCE_MEETING_TABLE}"
+  local metering_params=""
+  if [[ "${ENABLE_METERING}" == "true" ]]; then
+    metering_params="--enable-network-egress-metering --enable-resource-consumption-metering --resource-usage-bigquery-dataset ${RESOURCE_MEETING_TABLE}"
+  fi
   create_metering_table
   gcloud beta container clusters create \
     ${name} \
