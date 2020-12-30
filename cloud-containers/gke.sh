@@ -37,7 +37,7 @@ function create()
   local name=$1
   local machine_type="${MACHINE_TYPE}"
   local count=1
-  local max_nodes=3
+  local max_nodes=5
   local maintenance_window="06:00"
   local metering_params=""
   if [[ "${ENABLE_METERING}" == "true" ]]; then
