@@ -1,0 +1,71 @@
+import * as cdk from 'aws-cdk-lib';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
+import * as autoscaling from 'aws-cdk-lib/aws-autoscaling';
+import { Construct } from 'constructs';
+
+export interface DockerSwarmNodeGroupProps {
+  vpc: ec2.IVpc;
+  sg: ec2.ISecurityGroup;
+  desiredCapacity: number;
+  initCommands: string[];
+  role: iam.IRole;
+  ssmPrefix: string;
+}
+
+export class DockerSwarmNodeGroup extends Construct {
+  constructor(scope: Construct, id: string, props: DockerSwarmNodeGroupProps) {
+    super(scope, id);
+
+    const linuxUser = 'ec2-user';
+    const region = cdk.Stack.of(scope).region;
+    const stackName = cdk.Stack.of(scope).stackName;
+    const vpc = props.vpc;
+    const sg = props.sg;
+
+    const init = ec2.CloudFormationInit.fromConfigSets({
+      configSets: {
+        default: [
+          'packages',
+          'setup_docker',
+        ],
+      },
+      configs: {
+        packages: new ec2.InitConfig([
+          ec2.InitPackage.yum('docker'),
+          ec2.InitPackage.yum('ec2-instance-connect'),
+        ]),
+        setup_docker: new ec2.InitConfig([
+          ec2.InitCommand.shellCommand(`/usr/sbin/usermod -G docker -a ${linuxUser}`),
+          ec2.InitCommand.shellCommand('/usr/bin/systemctl enable docker.service'),
+          ec2.InitCommand.shellCommand('/usr/bin/systemctl start docker.service'),
+          ec2.InitCommand.shellCommand('/usr/bin/docker version'),
+          ec2.InitFile.fromString('/tmp/setup.sh', props.initCommands.join('\n'), {
+            mode: '0755',
+          }),
+          ec2.InitCommand.shellCommand('/tmp/setup.sh'),
+        ]),
+      },
+    });
+
+    const asg = new autoscaling.AutoScalingGroup(scope, `${id}-asg`, {
+      vpc,
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.MICRO),
+      machineImage: ec2.MachineImage.latestAmazonLinux2(),
+      desiredCapacity: props.desiredCapacity,
+      minCapacity: props.desiredCapacity,
+      maxCapacity: props.desiredCapacity,
+      securityGroup: sg,
+      associatePublicIpAddress: true,
+      vpcSubnets: {
+        subnetType: ec2.SubnetType.PUBLIC,
+      },
+      init: init,
+      signals: autoscaling.Signals.waitForAll({
+        timeout: cdk.Duration.minutes(30),
+      }),
+      role: props.role,
+    });
+  }
+}
