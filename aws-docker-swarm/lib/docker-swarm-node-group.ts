@@ -21,8 +21,8 @@ export class DockerSwarmNodeGroup extends Construct {
     super(scope, id);
 
     const linuxUser = 'ec2-user';
-    const region = cdk.Stack.of(scope).region;
-    const stackName = cdk.Stack.of(scope).stackName;
+    const linuxImage = ec2.MachineImage.latestAmazonLinux2();
+    const region = 'us-east-1';
     const vpc = props.vpc;
     const sg = props.sg;
 
@@ -60,7 +60,7 @@ export class DockerSwarmNodeGroup extends Construct {
     const asg = new autoscaling.AutoScalingGroup(scope, `${id}-asg`, {
       vpc,
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.MICRO),
-      machineImage: ec2.MachineImage.latestAmazonLinux2(),
+      machineImage: linuxImage,
       desiredCapacity: props.desiredCapacity,
       minCapacity: props.desiredCapacity,
       maxCapacity: props.desiredCapacity,
@@ -74,6 +74,7 @@ export class DockerSwarmNodeGroup extends Construct {
         timeout: cdk.Duration.minutes(30),
       }),
       role: props.role,
+      cooldown: cdk.Duration.seconds(15),
     });
 
     this.swarmAsg = asg;

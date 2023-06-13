@@ -9,7 +9,7 @@ export class AwsDockerSwarmStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const region = 'us-east-1';
+    const region = cdk.Stack.of(this).region;
     const ssmPrefix = `/x9d72b8537afa/docker-swarm/${id}/join`;
 
     // create parameters that will be overwritten later
@@ -63,19 +63,13 @@ export class AwsDockerSwarmStack extends cdk.Stack {
         'set -e',
         '/usr/bin/docker swarm init',
         `/opt/bin/publish-join-tokens.sh ${region} ${ssmPrefix}`,
-/*
-        '/usr/bin/docker swarm init',
-        '/bin/echo ####### MANAGER #######',
-        '/usr/bin/docker swarm join-token manager',
-        '/bin/echo ####### WORKER #######',
-        '/usr/bin/docker swarm join-token worker',
-*/
       ],
       role: role,
       ssmPrefix: ssmPrefix,
     });
     seedManager.node.addDependency(joinTokenManagerSsm);
     seedManager.node.addDependency(joinTokenWorkerSsm);
+    cdk.Tags.of(seedManager.swarmAsg).add('docker-swarm/role', 'manager');
 
     const otherManagers = new nodeGroup.DockerSwarmNodeGroup(this, 'other-managers', {
       vpc: vpc,
@@ -90,6 +84,7 @@ export class AwsDockerSwarmStack extends cdk.Stack {
       ssmPrefix: ssmPrefix,
     });
     otherManagers.node.addDependency(seedManager);
+    cdk.Tags.of(otherManagers.swarmAsg).add('docker-swarm/role', 'manager');
 
     const workers = new nodeGroup.DockerSwarmNodeGroup(this, 'workers', {
       vpc: vpc,
@@ -104,5 +99,6 @@ export class AwsDockerSwarmStack extends cdk.Stack {
       ssmPrefix: ssmPrefix,
     });
     workers.node.addDependency(seedManager);
+    cdk.Tags.of(workers.swarmAsg).add('docker-swarm/role', 'worker');
   }
 }

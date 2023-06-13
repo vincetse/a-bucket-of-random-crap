@@ -27,3 +27,5 @@ ssh:
 		--ssh-public-key file://~/.ssh/id_ed25519.pub
 	$(eval hostname = $(shell aws ec2 describe-instances --instance-id $(instance_id) --query 'Reservations[0].Instances[0].PublicDnsName' --output text))
 	ssh ec2-user@$(hostname)
+
+ssh-seed:
