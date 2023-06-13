@@ -15,6 +15,8 @@ export interface DockerSwarmNodeGroupProps {
 }
 
 export class DockerSwarmNodeGroup extends Construct {
+  swarmAsg: autoscaling.AutoScalingGroup;
+
   constructor(scope: Construct, id: string, props: DockerSwarmNodeGroupProps) {
     super(scope, id);
 
@@ -41,6 +43,12 @@ export class DockerSwarmNodeGroup extends Construct {
           ec2.InitCommand.shellCommand('/usr/bin/systemctl enable docker.service'),
           ec2.InitCommand.shellCommand('/usr/bin/systemctl start docker.service'),
           ec2.InitCommand.shellCommand('/usr/bin/docker version'),
+          ec2.InitFile.fromFileInline('/opt/bin/publish-join-tokens.sh', './lib/publish-join-tokens.sh', {
+            mode: '0755',
+          }),
+          ec2.InitFile.fromFileInline('/opt/bin/join-docker-swarm.sh', './lib/join-docker-swarm.sh', {
+            mode: '0755',
+          }),
           ec2.InitFile.fromString('/tmp/setup.sh', props.initCommands.join('\n'), {
             mode: '0755',
           }),
@@ -67,5 +75,7 @@ export class DockerSwarmNodeGroup extends Construct {
       }),
       role: props.role,
     });
+
+    this.swarmAsg = asg;
   }
 }
