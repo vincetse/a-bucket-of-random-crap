@@ -1,3 +1,4 @@
+import * as os from 'os';
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as iam from 'aws-cdk-lib/aws-iam';
@@ -31,6 +32,7 @@ export class DockerSwarmNodeGroup extends Construct {
         default: [
           'packages',
           'setup_docker',
+          'deploy_ssh_key',
         ],
       },
       configs: {
@@ -53,6 +55,14 @@ export class DockerSwarmNodeGroup extends Construct {
             mode: '0755',
           }),
           ec2.InitCommand.shellCommand('/tmp/setup.sh'),
+        ]),
+        deploy_ssh_key: new ec2.InitConfig([
+          ec2.InitCommand.shellCommand(`/bin/sudo -u ${linuxUser} -- /bin/mkdir --parents --mode=0700 ~${linuxUser}/.ssh`),
+          ec2.InitFile.fromFileInline(`/home/${linuxUser}/.ssh/authorized_keys`, os.homedir() + '/.ssh/id_ed25519.pub', {
+            mode: '0700',
+            owner: linuxUser,
+            group: linuxUser,
+          }),
         ]),
       },
     });

@@ -20,23 +20,28 @@ recreate:
 	sleep 60
 	make create
 
+ssh_user=ec2-user
+
 ssh:
-	aws ec2-instance-connect send-ssh-public-key \
-		--region $(region) \
-		--instance-id $(instance_id) \
-		--instance-os-user ec2-user \
-		--ssh-public-key file://~/.ssh/id_ed25519.pub
 	$(eval hostname = $(shell aws ec2 describe-instances --instance-id $(instance_id) --query 'Reservations[0].Instances[0].PublicDnsName' --output text))
-	ssh ec2-user@$(hostname)
+	ssh $(ssh_user)@$(hostname)
 
 ssh-managers:
-	$(eval instances = $(shell aws ec2 describe-instances --filters 'Name=tag:docker-swarm/role,Values=manager' --query 'Reservations[].Instances[].InstanceId' --output text))
+	$(eval instances = $(shell aws ec2 describe-instances --filters Name=tag:docker-swarm/role,Values=manager Name=instance-state-name,Values=running --query 'Reservations[].Instances[].InstanceId' --output text))
 	for instance in $(instances); do \
 		instance_id=$${instance} make ssh; \
 	done
 
 ssh-manager:
-	$(eval instances = $(shell aws ec2 describe-instances --filters 'Name=tag:docker-swarm/role,Values=manager' --query 'Reservations[0].Instances[0].InstanceId' --output text))
+	$(eval instances = $(shell aws ec2 describe-instances --filters Name=tag:docker-swarm/role,Values=manager Name=instance-state-name,Values=running --query 'Reservations[0].Instances[0].InstanceId' --output text))
 	for instance in $(instances); do \
 		instance_id=$${instance} make ssh; \
 	done
+
+################################################################################
+_push_key:
+	aws ec2-instance-connect send-ssh-public-key \
+		--region $(region) \
+		--instance-id $(instance_id) \
+		--instance-os-user ec2-user \
+		--ssh-public-key file://~/.ssh/id_ed25519.pub
