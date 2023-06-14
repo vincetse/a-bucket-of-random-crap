@@ -28,4 +28,14 @@ ssh:
 	$(eval hostname = $(shell aws ec2 describe-instances --instance-id $(instance_id) --query 'Reservations[0].Instances[0].PublicDnsName' --output text))
 	ssh ec2-user@$(hostname)
 
-ssh-seed:
+ssh-managers:
+	$(eval instances = $(shell aws ec2 describe-instances --filters 'Name=tag:docker-swarm/role,Values=manager' --query 'Reservations[].Instances[].InstanceId' --output text))
+	for instance in $(instances); do \
+		instance_id=$${instance} make ssh; \
+	done
+
+ssh-manager:
+	$(eval instances = $(shell aws ec2 describe-instances --filters 'Name=tag:docker-swarm/role,Values=manager' --query 'Reservations[0].Instances[0].InstanceId' --output text))
+	for instance in $(instances); do \
+		instance_id=$${instance} make ssh; \
+	done
