@@ -1,3 +1,4 @@
+# https://aws.plainenglish.io/using-aws-to-create-a-docker-swarm-b48731c850c
 account_id = $(shell aws sts get-caller-identity --query 'Account' --output text)
 region = $(shell aws configure get region)
 
