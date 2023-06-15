@@ -32,8 +32,6 @@ export class AwsDockerSwarmStack extends cdk.Stack {
 
     const myIpCidr = '24.17.16.148/32';
     const vpc = ec2.Vpc.fromLookup(this, 'VPC', {
-      // This imports the default VPC but you can also
-      // specify a 'vpcName' or 'tags'.
       isDefault: true,
     });
 
@@ -49,11 +47,6 @@ export class AwsDockerSwarmStack extends cdk.Stack {
     sg.addIngressRule(sg, ec2.Port.udp(7946), 'Docker Swarm', true);
     sg.addIngressRule(sg, ec2.Port.udp(4789), 'Docker Swarm', true);
 
-    // join tokens
-    // aws --region us-east-1 ssm  put-parameter --value 'docker swarm join --token SWMTKN-1-4tbx2x094w64i1d68xn4ncrpveogaqy1l2h3v7abb5jmucv6la-9w9z313a5biv7wzm22ogllamc 172.31.73.61:2377' --name '/x9d72b8537afa/docker-swarm/AwsDockerSwarmStack/join/manager' --type String
-    // aws --region us-east-1 ssm  put-parameter --value 'docker swarm join --token SWMTKN-1-4tbx2x094w64i1d68xn4ncrpveogaqy1l2h3v7abb5jmucv6la-d5nqt1mgpacdsvg9gwtn55zr4 172.31.73.61:2377' --name '/x9d72b8537afa/docker-swarm/AwsDockerSwarmStack/join/worker' --type String
-
-    // eval $(aws --region us-east-1 ssm get-parameter --name '/x9d72b8537afa/docker-swarm/AwsDockerSwarmStack/join/worker' --query 'Parameter.Value'  --output text)
     const seedManager = new nodeGroup.DockerSwarmNodeGroup(this, 'seed-manager', {
       vpc: vpc,
       sg: sg,
@@ -83,7 +76,7 @@ export class AwsDockerSwarmStack extends cdk.Stack {
       role: role,
       ssmPrefix: ssmPrefix,
     });
-    otherManagers.node.addDependency(seedManager);
+    otherManagers.swarmAsg.node.addDependency(seedManager.swarmAsg);
     cdk.Tags.of(otherManagers.swarmAsg).add('docker-swarm/role', 'manager');
 
     const workers = new nodeGroup.DockerSwarmNodeGroup(this, 'workers', {
@@ -98,7 +91,7 @@ export class AwsDockerSwarmStack extends cdk.Stack {
       role: role,
       ssmPrefix: ssmPrefix,
     });
-    workers.node.addDependency(seedManager);
+    workers.swarmAsg.node.addDependency(seedManager.swarmAsg);
     cdk.Tags.of(workers.swarmAsg).add('docker-swarm/role', 'worker');
   }
 }
