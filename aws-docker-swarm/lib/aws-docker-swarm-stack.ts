@@ -30,7 +30,9 @@ export class AwsDockerSwarmStack extends cdk.Stack {
       ],
     });
 
-    const myIpCidr = '24.17.16.148/32';
+    const myIpCidrs = [
+      '24.17.16.148/32',
+    ];
     const vpc = ec2.Vpc.fromLookup(this, 'VPC', {
       isDefault: true,
     });
@@ -40,14 +42,19 @@ export class AwsDockerSwarmStack extends cdk.Stack {
       allowAllOutbound: true,
       description: 'Docker Swarm sg',
     });
-    sg.addIngressRule(ec2.Peer.ipv4(myIpCidr), ec2.Port.tcp(22), 'me');
     sg.addIngressRule(sg, ec2.Port.tcp(2376), 'Docker Swarm', true);
     sg.addIngressRule(sg, ec2.Port.tcp(2377), 'Docker Swarm', true);
     sg.addIngressRule(sg, ec2.Port.tcp(7946), 'Docker Swarm', true);
     sg.addIngressRule(sg, ec2.Port.udp(7946), 'Docker Swarm', true);
     sg.addIngressRule(sg, ec2.Port.udp(4789), 'Docker Swarm', true);
-    sg.addIngressRule(ec2.Peer.ipv4(myIpCidr), ec2.Port.tcp(80), 'me');
-    sg.addIngressRule(ec2.Peer.ipv4(myIpCidr), ec2.Port.tcp(443), 'me');
+    myIpCidrs.forEach(function(myIpCidr) {
+      sg.addIngressRule(ec2.Peer.ipv4(myIpCidr), ec2.Port.tcp(22), 'me');
+      sg.addIngressRule(ec2.Peer.ipv4(myIpCidr), ec2.Port.tcp(80), 'me');
+      sg.addIngressRule(ec2.Peer.ipv4(myIpCidr), ec2.Port.tcp(443), 'me');
+    });
+    sg.addIngressRule(ec2.Peer.prefixList('pl-60b85b09'), ec2.Port.tcp(22), 'corp', true);
+    sg.addIngressRule(ec2.Peer.prefixList('pl-60b85b09'), ec2.Port.tcp(80), 'corp', true);
+    sg.addIngressRule(ec2.Peer.prefixList('pl-60b85b09'), ec2.Port.tcp(443), 'corp', true);
 
     const seedManager = new nodeGroup.DockerSwarmNodeGroup(this, 'seed-manager', {
       vpc: vpc,
