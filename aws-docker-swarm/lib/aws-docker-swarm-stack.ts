@@ -30,8 +30,11 @@ export class AwsDockerSwarmStack extends cdk.Stack {
       ],
     });
 
-    const myIpCidrs = [
+    const myIpCidrs: string[] = [
       '24.17.16.148/32',
+    ];
+    const myPrefixLists = [
+      'pl-60b85b09',
     ];
     const vpc = ec2.Vpc.fromLookup(this, 'VPC', {
       isDefault: true,
@@ -52,9 +55,11 @@ export class AwsDockerSwarmStack extends cdk.Stack {
       sg.addIngressRule(ec2.Peer.ipv4(myIpCidr), ec2.Port.tcp(80), 'me');
       sg.addIngressRule(ec2.Peer.ipv4(myIpCidr), ec2.Port.tcp(443), 'me');
     });
-    sg.addIngressRule(ec2.Peer.prefixList('pl-60b85b09'), ec2.Port.tcp(22), 'corp', true);
-    sg.addIngressRule(ec2.Peer.prefixList('pl-60b85b09'), ec2.Port.tcp(80), 'corp', true);
-    sg.addIngressRule(ec2.Peer.prefixList('pl-60b85b09'), ec2.Port.tcp(443), 'corp', true);
+    myPrefixLists.forEach(function(myPrefixList) {
+      sg.addIngressRule(ec2.Peer.prefixList(myPrefixList), ec2.Port.tcp(22), 'corp', true);
+      sg.addIngressRule(ec2.Peer.prefixList(myPrefixList), ec2.Port.tcp(80), 'corp', true);
+      sg.addIngressRule(ec2.Peer.prefixList(myPrefixList), ec2.Port.tcp(443), 'corp', true);
+    });
 
     const seedManager = new nodeGroup.DockerSwarmNodeGroup(this, 'seed-manager', {
       vpc: vpc,
