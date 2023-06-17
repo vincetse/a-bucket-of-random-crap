@@ -1,5 +1,5 @@
 
-export EMAIL=admin@example.com
+export EMAIL=vincetse@users.noreply.github.com
 export DOMAIN=$(shell curl -s http://169.254.169.254/latest/meta-data/public-hostname)
 export USERNAME=scott
 export PASSWORD=tiger
