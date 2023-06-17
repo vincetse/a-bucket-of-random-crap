@@ -18,5 +18,5 @@ create:
 
 delete:
 	docker stack rm $(stack_name)
-	docker node update --label-rm traefik-public.traefik-public-certificates
+	docker node update --label-rm traefik-public.traefik-public-certificates $(node_id)
 	docker network rm traefik-public

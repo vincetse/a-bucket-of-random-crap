@@ -64,6 +64,7 @@ export class AwsDockerSwarmStack extends cdk.Stack {
     const seedManager = new nodeGroup.DockerSwarmNodeGroup(this, 'seed-manager', {
       vpc: vpc,
       sg: sg,
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3A, ec2.InstanceSize.MICRO),
       desiredCapacity: 1,
       initCommands: [
         '#!/bin/bash',
@@ -81,6 +82,7 @@ export class AwsDockerSwarmStack extends cdk.Stack {
     const otherManagers = new nodeGroup.DockerSwarmNodeGroup(this, 'other-managers', {
       vpc: vpc,
       sg: sg,
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3A, ec2.InstanceSize.MICRO),
       desiredCapacity: 2,
       initCommands: [
         '#!/bin/bash',
@@ -96,6 +98,7 @@ export class AwsDockerSwarmStack extends cdk.Stack {
     const workers = new nodeGroup.DockerSwarmNodeGroup(this, 'workers', {
       vpc: vpc,
       sg: sg,
+      instanceType: ec2.InstanceType.of(ec2.InstanceClass.T3A, ec2.InstanceSize.MICRO),
       desiredCapacity: 5,
       initCommands: [
         '#!/bin/bash',

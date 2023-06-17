@@ -9,6 +9,7 @@ import { Construct } from 'constructs';
 export interface DockerSwarmNodeGroupProps {
   vpc: ec2.IVpc;
   sg: ec2.ISecurityGroup;
+  instanceType: ec2.InstanceType;
   desiredCapacity: number;
   initCommands: string[];
   role: iam.IRole;
@@ -69,7 +70,8 @@ export class DockerSwarmNodeGroup extends Construct {
 
     const asg = new autoscaling.AutoScalingGroup(scope, `${id}-asg`, {
       vpc,
-      instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.MICRO),
+      //instanceType: ec2.InstanceType.of(ec2.InstanceClass.BURSTABLE2, ec2.InstanceSize.MICRO),
+      instanceType: props.instanceType,
       machineImage: linuxImage,
       desiredCapacity: props.desiredCapacity,
       minCapacity: props.desiredCapacity,

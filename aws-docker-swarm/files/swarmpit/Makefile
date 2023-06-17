@@ -20,4 +20,3 @@ delete:
 	-docker stack rm $(stack_name)
 	-docker node update --label-rm swarmpit.influx-data $(node_id)
 	-docker node update --label-rm swarmpit.db-data $(node_id)
-	-docker network rm traefik-public

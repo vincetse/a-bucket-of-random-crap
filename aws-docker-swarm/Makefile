@@ -25,9 +25,8 @@ recreate:
 ssh-manager: _get_manager_instance_id _instance_id_to_public_dns_name
 	ssh $(ssh_user)@$(hostname)
 
-
-docker_remote_context_setup: _get_manager_instance _instance_id_to_public_dns_name
-	-docker context rm $(docker_context_name)
+context: _get_manager_instance_id _instance_id_to_public_dns_name
+	docker context rm $(docker_context_name) -f
 	docker context create --docker host=ssh://$(ssh_user)@$(hostname) $(docker_context_name)
 	docker --context $(docker_context_name) node ls
 	docker --context $(docker_context_name) ps
@@ -42,6 +41,9 @@ deploy-files: _get_manager_public_dns_names
 	for hostname in $(hostnames); do \
 		rsync -e 'ssh -l $(ssh_user)' -avz files $${hostname}:. ; \
 	done
+
+get-managers: _get_manager_public_dns_names
+	@echo $(hostnames) | tr " " "\n"
 
 ################################################################################
 _push_key:
