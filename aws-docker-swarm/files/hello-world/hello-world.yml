@@ -1,0 +1,34 @@
+version: '3.3'
+
+services:
+  app:
+    image: ghcr.io/infrastructure-as-code/hello-world:2.4.0
+    networks:
+      - traefik-public
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 128M
+        reservations:
+          cpus: '0.25'
+          memory: 64M
+      placement:
+        constraints:
+          - node.role == worker
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.hello-world-http.rule=Host(`hello.example.com`)
+        - traefik.http.routers.hello-world-http.entrypoints=http
+        #- traefik.http.routers.hello-world-http.middlewares=https-redirect
+        #- traefik.http.routers.hello-world-https.rule=Host(`hello.example.com`)
+        #- traefik.http.routers.hello-world-https.entrypoints=https
+        #- traefik.http.routers.hello-world-https.tls=true
+        #- traefik.http.routers.hello-world-https.tls.certresolver=le
+        - traefik.http.services.hello-world.loadbalancer.server.port=8080
+
+networks:
+  traefik-public:
+    external: true
