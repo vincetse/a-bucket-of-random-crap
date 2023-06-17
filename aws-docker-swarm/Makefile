@@ -1,6 +1,8 @@
 # https://aws.plainenglish.io/using-aws-to-create-a-docker-swarm-b48731c850c
 account_id = $(shell aws sts get-caller-identity --query 'Account' --output text)
 region = $(shell aws configure get region)
+ssh_user = ec2-user
+docker_context_name = swarm
 
 export CDK_DEFAULT_ACCOUNT=$(account_id) CDK_DEFAULT_REGION=$(region)
 export APP_NAME=AwsDockerSwarmStack
@@ -20,22 +22,25 @@ recreate:
 	sleep 60
 	make create
 
-ssh_user=ec2-user
-
-ssh:
-	$(eval hostname = $(shell aws ec2 describe-instances --instance-id $(instance_id) --query 'Reservations[0].Instances[0].PublicDnsName' --output text))
+ssh-manager: _get_manager_instance_id _instance_id_to_public_dns_name
 	ssh $(ssh_user)@$(hostname)
 
-ssh-managers:
-	$(eval instances = $(shell aws ec2 describe-instances --filters Name=tag:docker-swarm/role,Values=manager Name=instance-state-name,Values=running --query 'Reservations[].Instances[].InstanceId' --output text))
-	for instance in $(instances); do \
-		instance_id=$${instance} make ssh; \
-	done
 
-ssh-manager:
-	$(eval instances = $(shell aws ec2 describe-instances --filters Name=tag:docker-swarm/role,Values=manager Name=instance-state-name,Values=running --query 'Reservations[0].Instances[0].InstanceId' --output text))
-	for instance in $(instances); do \
-		instance_id=$${instance} make ssh; \
+docker_remote_context_setup: _get_manager_instance _instance_id_to_public_dns_name
+	-docker context rm $(docker_context_name)
+	docker context create --docker host=ssh://$(ssh_user)@$(hostname) $(docker_context_name)
+	docker --context $(docker_context_name) node ls
+	docker --context $(docker_context_name) ps
+
+ps:
+	docker --context $(docker_context_name) ps
+
+ls:
+	docker --context $(docker_context_name) node ls
+
+deploy-files: _get_manager_public_dns_names
+	for hostname in $(hostnames); do \
+		rsync -e 'ssh -l $(ssh_user)' -avz files $${hostname}:. ; \
 	done
 
 ################################################################################
@@ -45,3 +50,15 @@ _push_key:
 		--instance-id $(instance_id) \
 		--instance-os-user ec2-user \
 		--ssh-public-key file://~/.ssh/id_ed25519.pub
+
+_instance_id_to_public_dns_name:
+	$(eval hostname = $(shell aws ec2 describe-instances --instance-id $(instance_id) --query 'Reservations[0].Instances[0].PublicDnsName' --output text))
+
+_get_manager_instance_id:
+	$(eval instance_id = $(shell aws ec2 describe-instances --filters Name=tag:docker-swarm/role,Values=manager Name=instance-state-name,Values=running --query 'Reservations[0].Instances[0].InstanceId' --output text))
+
+_get_manager_instance_ids:
+	$(eval instance_ids = $(shell aws ec2 describe-instances --filters Name=tag:docker-swarm/role,Values=manager Name=instance-state-name,Values=running --query 'Reservations[].Instances[].InstanceId' --output text))
+
+_get_manager_public_dns_names:
+	$(eval hostnames = $(shell aws ec2 describe-instances --filters Name=tag:docker-swarm/role,Values=manager Name=instance-state-name,Values=running --query 'Reservations[].Instances[].PublicDnsName' --output text))
